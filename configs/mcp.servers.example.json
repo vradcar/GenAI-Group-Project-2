@@ -1,0 +1,37 @@
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "env": {}
+    },
+    {
+      "name": "tavily",
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      }
+    },
+    {
+      "name": "local-rag",
+      "command": "python",
+      "args": [
+        "-m",
+        "rag_server.server"
+      ],
+      "env": {
+        "RAG_COLLECTION": "${RAG_COLLECTION}",
+        "RAG_TOP_K": "${RAG_TOP_K}"
+      }
+    }
+  ]
+}

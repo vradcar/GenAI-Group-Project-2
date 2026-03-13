@@ -1,0 +1,20 @@
+providers:
+  ollama:
+    enabled: true
+    model: llama3.1:8b
+    base_url: http://localhost:11434
+
+  openai:
+    enabled: true
+    model: gpt-4.1-mini
+    api_key_env: OPENAI_API_KEY
+
+  anthropic:
+    enabled: true
+    model: claude-3-5-sonnet-20241022
+    api_key_env: ANTHROPIC_API_KEY
+
+  groq:
+    enabled: true
+    model: llama-3.1-70b-versatile
+    api_key_env: GROQ_API_KEY

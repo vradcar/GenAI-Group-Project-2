@@ -1,0 +1,15 @@
+execution:
+  mode: confirm
+  allow_shell: true
+  allow_file_write: true
+  allow_network: true
+
+confirm_mode:
+  require_confirmation_for:
+    - run_shell
+    - write_file
+    - delete_file
+
+auto_mode:
+  max_shell_commands_per_task: 10
+  max_file_writes_per_task: 20
