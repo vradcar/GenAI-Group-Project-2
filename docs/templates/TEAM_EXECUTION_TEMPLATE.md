@@ -35,7 +35,7 @@ Use this document as the working plan for a 5-person team building the CLI codin
 - Agent completes at least 2 non-trivial tasks without manual intervention
 
 ### Person 3 — CLI + Tool Runtime
-**Owner:** `<name>`
+**Owner:** `<Shar>`
 **Primary responsibilities:**
 - REPL interface
 - Streaming model output
