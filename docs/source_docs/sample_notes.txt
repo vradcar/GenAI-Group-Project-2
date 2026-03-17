@@ -1,0 +1,2 @@
+This is a sample document to test the RAG MCP server ingestion.
+It will be split into chunks and stored in a vector database.

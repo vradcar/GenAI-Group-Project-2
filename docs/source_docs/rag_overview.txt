@@ -1,0 +1,2 @@
+RAG (Retrieval-Augmented Generation) is a technique that allows large language models
+to answer questions based on external documents by retrieving relevant chunks.

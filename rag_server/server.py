@@ -1,30 +1,34 @@
+# rag_server/server.py
 import typer
-from rich import print
-
-from rag_server.retriever import TemplateRetriever
 from rag_server.settings import get_rag_settings
+from rag_server.retriever import Retriever
 
-app = typer.Typer(help="Custom local RAG MCP server template")
+app = typer.Typer(help="Custom local RAG MCP server")
 
-
-@app.command()
-def serve() -> None:
-    settings = get_rag_settings()
-    retriever = TemplateRetriever(settings)
-    retriever.ensure_vector_store()
-    print(
-        "[green]RAG server template ready.[/green] "
-        "Implement MCP protocol handlers and tool registration here."
-    )
-
+# Initialize settings and retriever once
+settings = get_rag_settings()
+retriever = Retriever(settings)
 
 @app.command()
-def ask(question: str) -> None:
-    settings = get_rag_settings()
-    retriever = TemplateRetriever(settings)
+def serve():
+    """
+    Start the RAG MCP server.
+    """
+    typer.echo("[green]RAG MCP server ready![/green]")
+    typer.echo(f"Collection: {settings.rag_collection}, Vector DB: {settings.rag_vector_dir}")
+    typer.echo("You can now call the 'ask' command to query documents.")
+
+@app.command()
+def ask(question: str):
+    """
+    Query the RAG server and return an answer.
+    """
     result = retriever.query(question)
-    print(result)
-
+    typer.echo("[bold]Question:[/bold] " + result["question"])
+    typer.echo("[bold]Answer:[/bold] " + result["answer"])
+    typer.echo("[bold]Retrieved Chunks:[/bold]")
+    for idx, chunk in enumerate(result["chunks"], 1):
+        typer.echo(f"{idx}. {chunk[:300]}...")  # show first 300 chars
 
 if __name__ == "__main__":
     app()
