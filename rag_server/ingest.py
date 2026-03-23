@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import List
+import hashlib
 from rag_server.settings import get_rag_settings
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -53,9 +54,9 @@ def build_vector_store(chunks: List[str], vector_dir: Path, settings) -> int:
     # 3️⃣ Get or create the collection
     collection = client.get_or_create_collection(settings.rag_collection)
 
-    # 4️⃣ Add chunks to the collection
-    ids = [f"chunk_{i}" for i in range(len(chunks))]
-    collection.add(documents=chunks, embeddings=embeddings.tolist(), ids=ids)
+    # 4️⃣ Upsert chunks with stable IDs for re-runs
+    ids = [hashlib.sha1(chunk.encode("utf-8")).hexdigest() for chunk in chunks]
+    collection.upsert(documents=chunks, embeddings=embeddings.tolist(), ids=ids)
 
     return len(chunks)
 

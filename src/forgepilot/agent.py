@@ -7,13 +7,15 @@ Interface contract with Person 3 (CLI + Tool Runtime):
     that confirm/auto gating and status indicators work correctly.
 """
 
+from __future__ import annotations
+
+import json
+from typing import TYPE_CHECKING, Any
+
 from forgepilot.local_tools import LocalTools
 from forgepilot.mcp_client import MCPClient
 from forgepilot.providers import LLMProvider
-
-# ToolRuntime is optional at import time to avoid circular deps;
-# type-hint as string and import lazily.
-from typing import TYPE_CHECKING
+from forgepilot.types import ToolCall
 
 if TYPE_CHECKING:
     from forgepilot.tool_runtime import ToolRuntime
@@ -32,8 +34,39 @@ class CodingAgent:
         self.mcp_client = mcp_client
         self.tool_runtime = tool_runtime  # Person 3 provides this; Person 2 uses it
 
-    def run_task(self, task: str, max_steps: int = 5) -> str:
-        self.mcp_client.load()
+    def _system_prompt(self) -> str:
+        return (
+            "You are an autonomous coding assistant. "
+            "Decide one action at a time and return strict JSON only with this schema: "
+            "{\"thought\": str, \"action\": {\"tool\": str, \"args\": object} | null, "
+            "\"final\": str | null}. "
+            "When you need file or shell info, use an action. "
+            "When done, set final and action=null. "
+            "Available local tools: read_file(path), write_file(path, content), run_shell(command)."
+        )
+
+    def _extract_json(self, text: str) -> dict[str, Any]:
+        text = text.strip()
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            start = text.find("{")
+            end = text.rfind("}")
+            if start >= 0 and end > start:
+                return json.loads(text[start : end + 1])
+            raise
+
+    def _build_user_prompt(self, task: str, step: int, history: list[str]) -> str:
+        recent = "\n".join(history[-6:]) if history else "(none yet)"
+        return (
+            f"TASK:\n{task}\n\n"
+            f"STEP: {step}\n"
+            "RECENT OBSERVATIONS:\n"
+            f"{recent}\n\n"
+            "Return JSON only."
+        )
+
+    def _fallback_text(self, task: str, max_steps: int) -> str:
         thought = self.provider.complete(task)
         summary_lines = [
             f"Task: {task}",
@@ -41,6 +74,66 @@ class CodingAgent:
             f"Available MCP servers: {len(self.mcp_client.list_servers())}",
             f"Available MCP tools: {len(self.mcp_client.list_tools())}",
             f"Loop budget: {max_steps} steps",
-            "Status: Template scaffold ready; implement full tool-calling loop next.",
+            "Status: Agent response was unstructured; returning provider output.",
         ]
         return "\n".join(summary_lines)
+
+    def run_task(self, task: str, max_steps: int = 5) -> str:
+        self.mcp_client.load()
+        history: list[str] = []
+
+        for step in range(1, max_steps + 1):
+            user_prompt = self._build_user_prompt(task=task, step=step, history=history)
+            raw = self.provider.complete(user_prompt, system_prompt=self._system_prompt())
+
+            try:
+                payload = self._extract_json(raw)
+            except Exception:
+                return self._fallback_text(task=task, max_steps=max_steps)
+
+            thought = str(payload.get("thought") or "")
+            final_text = payload.get("final")
+            action = payload.get("action")
+
+            if thought:
+                history.append(f"step {step} thought: {thought}")
+
+            if isinstance(final_text, str) and final_text.strip():
+                history.append(f"step {step} final: {final_text.strip()}")
+                return "\n".join(
+                    [
+                        f"Task: {task}",
+                        f"Final: {final_text.strip()}",
+                        "Status: Completed within step budget.",
+                    ]
+                )
+
+            if not isinstance(action, dict):
+                continue
+
+            tool_name = action.get("tool")
+            args = action.get("args")
+            if not isinstance(tool_name, str) or not isinstance(args, dict):
+                history.append(f"step {step} invalid action payload")
+                continue
+
+            if self.tool_runtime is None:
+                history.append(f"step {step} runtime missing for action {tool_name}")
+                continue
+
+            tool_result = self.tool_runtime.dispatch(
+                ToolCall(name=tool_name.strip(), arguments=args)
+            )
+            result_preview = tool_result.output[:500]
+            history.append(
+                f"step {step} tool {tool_result.name} success={tool_result.success} output={result_preview}"
+            )
+
+        return "\n".join(
+            [
+                f"Task: {task}",
+                "Status: Step budget exhausted before final answer.",
+                "Recent observations:",
+                *history[-5:],
+            ]
+        )

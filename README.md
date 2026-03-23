@@ -70,9 +70,9 @@ Use these templates to organize Group Project 2 execution:
 
 ## Implementation Notes
 
-- Current code is an implementation template with runnable stubs.
-- Replace `TemplateProvider` with real LangChain-backed model clients.
-- Replace `MCPClient` stubs with MCP Python SDK session/tool calls.
-- Replace RAG template retrieval with actual chunking, embedding, vector DB, and advanced RAG strategy.
+- Non-MCP core now includes an autonomous multi-step local tool loop in `src/forgepilot/agent.py`.
+- Provider abstraction now supports Ollama/OpenAI/Anthropic/Groq with safe fallback behavior.
+- RAG ingestion and retrieval include persistent vectors and fusion-style multi-query ranking.
+- MCP client is still a placeholder and should be replaced with MCP Python SDK session/tool calls.
 - Keep ingestion persistent so vector data is reused across sessions.
 

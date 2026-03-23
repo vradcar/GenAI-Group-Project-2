@@ -1,6 +1,19 @@
+import os
 from typing import Optional
-from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel, Field
+
+try:
+    from pydantic_settings import BaseSettings
+except Exception:
+    class BaseSettings(BaseModel):
+        def __init__(self, **data):
+            merged = {}
+            for field_name, field_info in self.__class__.model_fields.items():
+                env_name = field_info.alias or field_name
+                if env_name in os.environ:
+                    merged[field_name] = os.environ[env_name]
+            merged.update(data)
+            super().__init__(**merged)
 
 class RAGSettings(BaseSettings):
     """

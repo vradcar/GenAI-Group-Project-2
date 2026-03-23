@@ -47,19 +47,10 @@ def _print_header(name: str, mode: str) -> None:
     )
 
 
-def _run_task_streaming(agent: CodingAgent, task: str, max_steps: int) -> None:
-    """Run a task and stream the result token-by-token if the provider supports it."""
-    # Ask the agent whether we can stream; fall back to blocking complete.
-    stream_fn = getattr(agent.provider, "stream", None)
-    if stream_fn is not None:
-        console.print()
-        for token in stream_fn(task):
-            console.print(token, end="", highlight=False)
-        console.print()
-    else:
-        with console.status("[bold green]Thinking…[/bold green]"):
-            result = agent.run_task(task=task, max_steps=max_steps)
-        console.print(result)
+def _run_task(agent: CodingAgent, task: str, max_steps: int) -> None:
+    with console.status("[bold green]Thinking…[/bold green]"):
+        result = agent.run_task(task=task, max_steps=max_steps)
+    console.print(result)
 
 # Commands
 
@@ -116,7 +107,7 @@ def repl(
             console.print(f"[yellow]Execution mode → {new_mode}[/yellow]\n")
             continue
 
-        _run_task_streaming(agent, task, max_steps)
+        _run_task(agent, task, max_steps)
         console.print()
 
 
