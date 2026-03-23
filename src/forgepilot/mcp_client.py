@@ -6,8 +6,26 @@ from contextlib import AsyncExitStack
 from pathlib import Path
 from typing import Any
 
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+try:
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+except Exception:
+    ClientSession = None  # type: ignore[assignment]
+
+    class StdioServerParameters:  # type: ignore[no-redef]
+        def __init__(self, command: str, args: list[str] | None = None, env: dict[str, str] | None = None):
+            self.command = command
+            self.args = args or []
+            self.env = env
+
+    stdio_client = None
+
+
+def _mcp_sdk_available() -> bool:
+    return (
+        ClientSession is not None
+        and stdio_client is not None
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +77,9 @@ class MCPClient:
 
     async def __aenter__(self) -> "MCPClient":
         self._load_config()
+        if not _mcp_sdk_available():
+            logger.warning("MCP SDK not installed; continuing with no connected MCP servers")
+            return self
         await self._connect_all()
         return self
 
@@ -96,6 +117,9 @@ class MCPClient:
                 )
 
     async def _connect_one(self, server_def: dict[str, Any]) -> None:
+        if not _mcp_sdk_available() or stdio_client is None:
+            raise RuntimeError("MCP SDK unavailable")
+
         name    = server_def["name"]
         command = server_def["command"]
         args    = server_def.get("args", [])

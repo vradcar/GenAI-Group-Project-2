@@ -1,9 +1,6 @@
-
 import asyncio
 from pathlib import Path
 import pytest
-import pytest
-pytestmark = pytest.mark.asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from forgepilot.mcp_client import MCPClient, _flatten, _ok, _err
@@ -152,7 +149,6 @@ async def test_call_tool_exception(patched_client: tuple):
 
 
 @pytest.mark.asyncio
-@pytest.mark.asyncio
 async def test_failed_server_does_not_crash_client(tmp_path: Path):
     """A server that fails to connect should be skipped, not fatal."""
     config = tmp_path / "mcp_servers.json"
@@ -230,11 +226,11 @@ def test_err_shape():
 def test_to_anthropic_tools_shape(patched_client: tuple):
     client, _ = patched_client
 
-    async def _run():
-        async with client:
-            return client.to_anthropic_tools()
-
-    tools = asyncio.run(_run())
+    loop = asyncio.new_event_loop()
+    try:
+        tools = loop.run_until_complete(_run_anthropic(client))
+    finally:
+        loop.close()
     for t in tools:
         assert set(t.keys()) == {"name", "description", "input_schema"}
 
@@ -242,12 +238,22 @@ def test_to_anthropic_tools_shape(patched_client: tuple):
 def test_to_openai_tools_shape(patched_client: tuple):
     client, _ = patched_client
 
-    async def _run():
-        async with client:
-            return client.to_openai_tools()
-
-    tools = asyncio.run(_run())
+    loop = asyncio.new_event_loop()
+    try:
+        tools = loop.run_until_complete(_run_openai(client))
+    finally:
+        loop.close()
     for t in tools:
         assert t["type"] == "function"
         assert "name" in t["function"]
         assert "parameters" in t["function"]
+
+
+async def _run_anthropic(client: MCPClient):
+    async with client:
+        return client.to_anthropic_tools()
+
+
+async def _run_openai(client: MCPClient):
+    async with client:
+        return client.to_openai_tools()

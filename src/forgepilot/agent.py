@@ -9,6 +9,7 @@ Interface contract with Person 3 (CLI + Tool Runtime):
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import TYPE_CHECKING, Any
 
@@ -42,7 +43,8 @@ class CodingAgent:
             "\"final\": str | null}. "
             "When you need file or shell info, use an action. "
             "When done, set final and action=null. "
-            "Available local tools: read_file(path), write_file(path, content), run_shell(command)."
+            "Available local tools: read_file(path), write_file(path, content), run_shell(command). "
+            "Use MCP tools when their names appear in available tools context."
         )
 
     def _extract_json(self, text: str) -> dict[str, Any]:
@@ -79,55 +81,69 @@ class CodingAgent:
         return "\n".join(summary_lines)
 
     def run_task(self, task: str, max_steps: int = 5) -> str:
-        self.mcp_client.load()
+        return asyncio.run(self._run_task_async(task=task, max_steps=max_steps))
+
+    async def _run_task_async(self, task: str, max_steps: int = 5) -> str:
         history: list[str] = []
 
-        for step in range(1, max_steps + 1):
-            user_prompt = self._build_user_prompt(task=task, step=step, history=history)
-            raw = self.provider.complete(user_prompt, system_prompt=self._system_prompt())
+        async with self.mcp_client:
+            available_mcp_tools = [tool["name"] for tool in self.mcp_client.list_tools()]
 
-            try:
-                payload = self._extract_json(raw)
-            except Exception:
-                return self._fallback_text(task=task, max_steps=max_steps)
-
-            thought = str(payload.get("thought") or "")
-            final_text = payload.get("final")
-            action = payload.get("action")
-
-            if thought:
-                history.append(f"step {step} thought: {thought}")
-
-            if isinstance(final_text, str) and final_text.strip():
-                history.append(f"step {step} final: {final_text.strip()}")
-                return "\n".join(
-                    [
-                        f"Task: {task}",
-                        f"Final: {final_text.strip()}",
-                        "Status: Completed within step budget.",
-                    ]
+            if available_mcp_tools:
+                history.append(
+                    "available_mcp_tools: " + ", ".join(available_mcp_tools[:20])
                 )
 
-            if not isinstance(action, dict):
-                continue
+            for step in range(1, max_steps + 1):
+                user_prompt = self._build_user_prompt(task=task, step=step, history=history)
+                raw = self.provider.complete(user_prompt, system_prompt=self._system_prompt())
 
-            tool_name = action.get("tool")
-            args = action.get("args")
-            if not isinstance(tool_name, str) or not isinstance(args, dict):
-                history.append(f"step {step} invalid action payload")
-                continue
+                try:
+                    payload = self._extract_json(raw)
+                except Exception:
+                    return self._fallback_text(task=task, max_steps=max_steps)
 
-            if self.tool_runtime is None:
-                history.append(f"step {step} runtime missing for action {tool_name}")
-                continue
+                thought = str(payload.get("thought") or "")
+                final_text = payload.get("final")
+                action = payload.get("action")
 
-            tool_result = self.tool_runtime.dispatch(
-                ToolCall(name=tool_name.strip(), arguments=args)
-            )
-            result_preview = tool_result.output[:500]
-            history.append(
-                f"step {step} tool {tool_result.name} success={tool_result.success} output={result_preview}"
-            )
+                if thought:
+                    history.append(f"step {step} thought: {thought}")
+
+                if isinstance(final_text, str) and final_text.strip():
+                    history.append(f"step {step} final: {final_text.strip()}")
+                    return "\n".join(
+                        [
+                            f"Task: {task}",
+                            f"Final: {final_text.strip()}",
+                            "Status: Completed within step budget.",
+                        ]
+                    )
+
+                if not isinstance(action, dict):
+                    continue
+
+                tool_name = action.get("tool")
+                args = action.get("args")
+                if not isinstance(tool_name, str) or not isinstance(args, dict):
+                    history.append(f"step {step} invalid action payload")
+                    continue
+
+                if self.tool_runtime is None:
+                    history.append(f"step {step} runtime missing for action {tool_name}")
+                    continue
+
+                dispatch_async = getattr(self.tool_runtime, "dispatch_async", None)
+                if callable(dispatch_async):
+                    tool_result = await dispatch_async(ToolCall(name=tool_name.strip(), arguments=args))
+                else:
+                    tool_result = self.tool_runtime.dispatch(
+                        ToolCall(name=tool_name.strip(), arguments=args)
+                    )
+                result_preview = tool_result.output[:500]
+                history.append(
+                    f"step {step} tool {tool_result.name} success={tool_result.success} output={result_preview}"
+                )
 
         return "\n".join(
             [

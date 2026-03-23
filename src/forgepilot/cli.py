@@ -30,7 +30,11 @@ def _build_agent(settings: Settings) -> tuple[CodingAgent, ToolRuntime]:
     provider = create_provider(settings)
     local_tools = LocalTools(settings.workspace_root)
     mcp_client = MCPClient(settings.mcp_config_path)
-    tool_runtime = ToolRuntime(local_tools, execution_mode=settings.execution_mode)
+    tool_runtime = ToolRuntime(
+        local_tools,
+        execution_mode=settings.execution_mode,
+        mcp_client=mcp_client,
+    )
     agent = CodingAgent(
         provider=provider,
         tools=local_tools,
