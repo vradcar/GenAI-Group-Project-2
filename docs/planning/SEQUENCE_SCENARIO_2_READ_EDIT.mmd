@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as CLI
+    participant A as Agentic Loop
+    participant P as LLM Provider
+    participant T as Tool Runtime
+    participant F as Filesystem MCP Server
+
+    U->>C: "Read file and make edits"
+    C->>A: Task
+    A->>P: Plan first action
+    P-->>A: filesystem__read_file
+
+    alt confirm mode
+        A->>C: Ask permission
+        U-->>C: Approve
+    end
+
+    A->>T: dispatch(read_file)
+    T->>F: call_tool(read_file)
+    F-->>T: file content
+    T-->>A: result
+
+    A->>P: Plan next action
+    P-->>A: filesystem__write_file
+
+    alt confirm mode
+        A->>C: Ask permission
+        U-->>C: Approve
+    end
+
+    A->>T: dispatch(write_file)
+    T->>F: call_tool(write_file)
+    F-->>T: success
+    T-->>A: result
+
+    A->>P: Summarize changes
+    P-->>A: final response
+    A-->>C: stream output
+    C-->>U: done

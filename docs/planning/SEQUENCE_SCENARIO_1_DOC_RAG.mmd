@@ -1,0 +1,30 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as CLI
+    participant A as Agentic Loop
+    participant P as LLM Provider
+    participant M as MCP Client
+    participant R as Local RAG MCP Server
+
+    U->>C: Ask docs question (e.g., Fusion Retrieval)
+    C->>A: Forward task
+    A->>M: list_tools()
+    M-->>A: Filesystem + External + RAG tools
+    A->>P: Decide next action
+    P-->>A: Select rag__query_docs
+
+    alt confirm mode
+        A->>C: Show tool call + prompt
+        U-->>C: Approve
+    end
+
+    A->>M: call_tool(rag__query_docs, question)
+    M->>R: Query vector DB
+    R-->>M: chunks + answer
+    M-->>A: tool result
+
+    A->>P: Produce grounded final response
+    P-->>A: Final answer
+    A-->>C: Stream output + tool logs
+    C-->>U: Display completion

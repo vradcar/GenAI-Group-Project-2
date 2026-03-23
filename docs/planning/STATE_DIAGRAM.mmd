@@ -1,0 +1,26 @@
+stateDiagram-v2
+    [*] --> Idle
+
+    Idle --> ParseTask: User enters task in CLI
+    ParseTask --> BuildContext: Gather workspace/tool context
+
+    BuildContext --> SelectProvider: Choose Ollama/Groq/OpenAI/Anthropic
+    SelectProvider --> LoadTools: Load local + MCP tools
+
+    LoadTools --> PlanAction: Agent asks LLM for next step
+
+    PlanAction --> AwaitConfirm: Tool requires approval in confirm mode
+    AwaitConfirm --> ExecuteTool: User approves
+    AwaitConfirm --> PlanAction: User rejects / replan
+
+    PlanAction --> ExecuteTool: Auto mode
+
+    ExecuteTool --> ObserveResult: Tool output captured
+    ObserveResult --> PlanAction: More work remains
+    ObserveResult --> Finalize: Task complete
+
+    PlanAction --> Finalize: No further tools needed
+
+    Finalize --> Idle: Show result and wait for next prompt
+    Finalize --> Error: Unhandled exception path
+    Error --> Idle: Recovery

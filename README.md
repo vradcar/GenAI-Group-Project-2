@@ -50,7 +50,12 @@ Template scaffold for a CLI coding assistant with provider abstraction, MCP inte
   - `run_rag_server.ps1`
   - `run_tests.ps1`
 
-## Team Execution Templates
+-## Planning Diagrams (Required)
+
+- `docs/planning/STATE_DIAGRAM.mmd`
+- `docs/planning/SEQUENCE_SCENARIO_1_DOC_RAG.mmd`
+- `docs/planning/SEQUENCE_SCENARIO_2_READ_EDIT.mmd`
+- `docs/planning/PLANNING_DELIVERABLES_CHECKLIST.md`
 
 ## Implementation Notes
 
