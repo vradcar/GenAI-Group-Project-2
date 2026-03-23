@@ -6,32 +6,28 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "."
+        "/path/to/your/project"
       ],
-      "env": {}
+      "env": null
     },
     {
       "name": "tavily",
       "command": "npx",
       "args": [
         "-y",
-        "tavily-mcp"
+        "tavily-mcp@0.1.4"
       ],
       "env": {
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
       }
     },
     {
-      "name": "local-rag",
+      "name": "rag",
       "command": "python",
       "args": [
-        "-m",
-        "rag_server.server"
+        "src/forgepilot/rag_server/server.py"
       ],
-      "env": {
-        "RAG_COLLECTION": "${RAG_COLLECTION}",
-        "RAG_TOP_K": "${RAG_TOP_K}"
-      }
+      "env": null
     }
   ]
 }
