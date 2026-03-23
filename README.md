@@ -52,27 +52,11 @@ Template scaffold for a CLI coding assistant with provider abstraction, MCP inte
 
 ## Team Execution Templates
 
-## Project Templates
-
-Use these templates to organize Group Project 2 execution:
-
-- `docs/templates/TEAM_EXECUTION_TEMPLATE.md` — 5-person role split + day-by-day plan (integration lead included)
-- `docs/templates/SPRINT_BOARD_TEMPLATE.md` — issue/milestone/label setup for GitHub Projects
-- `docs/templates/RUBRIC_TRACKER_TEMPLATE.md` — grading rubric tracker with evidence mapping
-- `docs/templates/DEMO_REFLECTION_TEMPLATE.md` — demo script and written reflection template
-
-## Suggested Order
-
-1. Fill `TEAM_EXECUTION_TEMPLATE.md`
-2. Create issues from `SPRINT_BOARD_TEMPLATE.md`
-3. Track score gaps with `RUBRIC_TRACKER_TEMPLATE.md`
-4. Prepare submission using `DEMO_REFLECTION_TEMPLATE.md`
-
 ## Implementation Notes
 
 - Non-MCP core now includes an autonomous multi-step local tool loop in `src/forgepilot/agent.py`.
 - Provider abstraction now supports Ollama/OpenAI/Anthropic/Groq with safe fallback behavior.
 - RAG ingestion and retrieval include persistent vectors and fusion-style multi-query ranking.
-- MCP client is still a placeholder and should be replaced with MCP Python SDK session/tool calls.
+- MCP client includes dynamic tool loading, namespaced tool registration, and async tool invocation.
 - Keep ingestion persistent so vector data is reused across sessions.
 
