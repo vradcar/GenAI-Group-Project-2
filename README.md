@@ -15,6 +15,13 @@ Template scaffold for a CLI coding assistant with provider abstraction, MCP inte
 5. Run local RAG ingestion + server template:
 	- `./scripts/run_rag_ingest.ps1`
 	- `./scripts/run_rag_server.ps1`
+6. Run end-to-end local deployment checks:
+  - `./scripts/deploy_local.ps1`
+
+## Deployment
+
+- Full local deployment guide: `DEPLOYMENT.md`
+- Includes bootstrap, tests, RAG ingestion, and MCP invocation checks.
 
 ## Required Environment Templates
 
@@ -45,12 +52,13 @@ Template scaffold for a CLI coding assistant with provider abstraction, MCP inte
   - `test_agent_template.py`
 - `scripts/`
   - `bootstrap.ps1`
+  - `deploy_local.ps1`
   - `run_assistant.ps1`
   - `run_rag_ingest.ps1`
   - `run_rag_server.ps1`
   - `run_tests.ps1`
 
--## Planning Diagrams (Required)
+## Planning Diagrams (Required)
 
 - `docs/planning/STATE_DIAGRAM.mmd`
 - `docs/planning/SEQUENCE_SCENARIO_1_DOC_RAG.mmd`
