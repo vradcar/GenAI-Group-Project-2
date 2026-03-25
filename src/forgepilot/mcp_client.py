@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 from contextlib import AsyncExitStack
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,21 @@ def _mcp_sdk_available() -> bool:
     )
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_env_value(value: str) -> str:
+    expanded = os.path.expandvars(value)
+
+    if expanded == value:
+        pattern = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)")
+
+        def repl(match: re.Match[str]) -> str:
+            var_name = match.group(1) or match.group(2)
+            return os.getenv(var_name, "")
+
+        expanded = pattern.sub(repl, value)
+
+    return expanded
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +142,7 @@ class MCPClient:
 
         # Resolve ${VAR} placeholders in env values from the real environment
         raw_env = server_def.get("env") or {}
-        env = {k: os.path.expandvars(v) for k, v in raw_env.items()} or None
+        env = {k: _resolve_env_value(v) for k, v in raw_env.items()} or None
 
         params = StdioServerParameters(command=command, args=args, env=env)
 

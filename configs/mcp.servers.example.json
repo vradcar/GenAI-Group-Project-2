@@ -6,26 +6,27 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/path/to/your/project"
+        "."
       ],
       "env": null
     },
     {
-      "name": "tavily",
+      "name": "context7",
       "command": "npx",
       "args": [
         "-y",
-        "tavily-mcp@0.1.4"
+        "@upstash/context7-mcp"
       ],
       "env": {
-        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
       }
     },
     {
       "name": "rag",
       "command": "python",
       "args": [
-        "src/forgepilot/rag_server/server.py"
+        "-m",
+        "rag_server.mcp_server"
       ],
       "env": null
     }
