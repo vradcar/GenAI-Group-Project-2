@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 if (Test-Path .\.venv\Scripts\python.exe) {
-  & .\.venv\Scripts\python.exe -m forgepilot.cli run --task "$Task" --max-steps $MaxSteps
+  & .\.venv\Scripts\python.exe -m forgepilot.cli run "$Task" --max-steps $MaxSteps
 } else {
-  python -m forgepilot.cli run --task "$Task" --max-steps $MaxSteps
+  python -m forgepilot.cli run "$Task" --max-steps $MaxSteps
 }

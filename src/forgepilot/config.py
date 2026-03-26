@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     anthropic_model: str = Field(default="claude-3-5-sonnet-20241022", alias="ANTHROPIC_MODEL")
 
     groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
-    groq_model: str = Field(default="llama-3.1-70b-versatile", alias="GROQ_MODEL")
+    groq_model: str = Field(default="llama-3.3-70b-versatile", alias="GROQ_MODEL")
 
     mcp_config_path: str = Field(default="./configs/mcp.servers.example.json", alias="MCP_CONFIG_PATH")
     mcp_timeout_seconds: int = Field(default=30, alias="MCP_TIMEOUT_SECONDS")

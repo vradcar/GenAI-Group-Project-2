@@ -53,3 +53,19 @@ python -m rag_server.ingest
 - If external MCP fails, verify `CONTEXT7_API_KEY` in `.env`.
 - If filesystem server fails, verify `npx` is available.
 - If RAG fails, verify `docs/source_docs` exists and `.vectorstore` is writable.
+
+## Extra Notes
+- Always verify environment variables are loaded before starting (`Get-Content .env` in PowerShell)
+- Double-check API keys are valid and not expired - test with a simple API call first
+- Run `mcp list` to verify all MCP servers are discoverable and responding
+- Model fallback behavior: if primary model fails, system will attempt to use backup models in order: gpt-4, gpt-3.5-turbo, claude-3-sonnet
+- Windows PowerShell commands are fully compatible - use `powershell.exe` if running from cmd.exe
+- Quick rollback: keep previous `.vectorstore` backup and restore if ingestion fails
+
+## Post-Deploy Verification Checklist
+
+- [ ] Tests passed successfully
+- [ ] RAG ingestion completed
+- [ ] MCP servers discovered and responding
+- [ ] Assistant CLI starts without errors
+- [ ] Context7 access works properly

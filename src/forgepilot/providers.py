@@ -46,16 +46,22 @@ class LangChainChatProvider:
 
     def complete(self, prompt: str, system_prompt: str | None = None) -> str:
         messages = self._build_messages(prompt, system_prompt)
-        response = self._llm.invoke(messages)
-        content = getattr(response, "content", "")
-        return str(content) if content is not None else ""
+        try:
+            response = self._llm.invoke(messages)
+            content = getattr(response, "content", "")
+            return str(content) if content is not None else ""
+        except Exception as exc:
+            return f"Provider error ({self.name}/{self.model}): {exc}"
 
     def stream(self, prompt: str, system_prompt: str | None = None) -> Iterator[str]:
         messages = self._build_messages(prompt, system_prompt)
-        for chunk in self._llm.stream(messages):
-            text = getattr(chunk, "content", "")
-            if text:
-                yield str(text)
+        try:
+            for chunk in self._llm.stream(messages):
+                text = getattr(chunk, "content", "")
+                if text:
+                    yield str(text)
+        except Exception as exc:
+            yield f"Provider error ({self.name}/{self.model}): {exc}"
 
 
 def _create_ollama(settings: Settings) -> LLMProvider:
@@ -127,12 +133,27 @@ def _create_groq(settings: Settings) -> LLMProvider:
 
 def create_provider(settings: Settings) -> LLMProvider:
     provider = settings.default_provider.lower().strip()
+
     if provider == "ollama":
-        return _create_ollama(settings)
-    if provider == "openai":
-        return _create_openai(settings)
-    if provider == "anthropic":
-        return _create_anthropic(settings)
-    if provider == "groq":
-        return _create_groq(settings)
+        selected = _create_ollama(settings)
+        if not isinstance(selected, TemplateProvider):
+            return selected
+    elif provider == "openai":
+        selected = _create_openai(settings)
+        if not isinstance(selected, TemplateProvider):
+            return selected
+    elif provider == "anthropic":
+        selected = _create_anthropic(settings)
+        if not isinstance(selected, TemplateProvider):
+            return selected
+    elif provider == "groq":
+        selected = _create_groq(settings)
+        if not isinstance(selected, TemplateProvider):
+            return selected
+
+    for candidate in (_create_groq, _create_openai, _create_anthropic, _create_ollama):
+        fallback = candidate(settings)
+        if not isinstance(fallback, TemplateProvider):
+            return fallback
+
     return TemplateProvider("unknown-provider", settings.default_model)
