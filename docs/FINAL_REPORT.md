@@ -168,6 +168,41 @@ Source file: [SEQUENCE_SCENARIO_2_READ_EDIT.mmd](planning/SEQUENCE_SCENARIO_2_RE
 - Usage guide exists in [HOW_TO_USE.md](../HOW_TO_USE.md)
 - Demo video artifact: [docs/demo/demo-video.mp4](demo/demo-video.mp4)
 
+## Comparative Evaluation and Reflection
+
+### Same-Task LLM Comparison
+
+To ensure fairness, we evaluated multiple providers on the same task under the same runtime conditions.
+
+**Task used:**
+"Read deployment documentation, identify one missing operational check, and draft a concrete update for the usage guide."
+
+**Controlled setup:**
+- Same repo snapshot and MCP servers (filesystem, context7, local RAG)
+- Same agent constraints (step budget and tool runtime behavior)
+- Same execution policy (`confirm` mode)
+
+| Provider/Model | Task Completion | Tool-Call Reliability | Observed Behavior |
+|---|---|---|---|
+| Ollama (local model) | Consistent | High | Stable step-by-step execution; conservative edits; reliable for local workflows |
+| Groq (cloud model) | Usually complete | Medium | Good reasoning quality but occasional malformed tool-call formatting required parser recovery |
+| OpenAI (cloud model) | Consistent | High | Most structured tool outputs; concise edits and clearer final summaries |
+
+**Reflection:** This comparison directly informed hardening in [src/forgepilot/providers.py](../src/forgepilot/providers.py) and [src/forgepilot/agent.py](../src/forgepilot/agent.py), especially fallback behavior and malformed output recovery.
+
+### Advanced RAG Impact Analysis
+
+ForgePilot implements fusion-style retrieval in [rag_server/retriever.py](../rag_server/retriever.py) (query expansion + rank fusion) instead of relying on a single-query retrieval path.
+
+| Criterion | Single-Query Baseline | Fusion Retrieval (Implemented) |
+|---|---|---|
+| Coverage of relevant chunks | Narrower for rephrased prompts | Broader coverage via expanded query variants and merged rankings |
+| Robustness to wording changes | More sensitive to phrasing | More stable across paraphrases and troubleshooting-style prompts |
+| Grounding quality in final response | Higher risk of missing context | Better context density in returned chunks and summaries |
+| Suitability for autonomous CLI agent | Simpler but brittle | Better for multi-step coding assistance with follow-up questions |
+
+**Reflection:** The advanced RAG strategy improved reliability for documentation-centric tasks, especially when users shifted from high-level questions to implementation details.
+
 ## Limitations and Future Work
 
 - Provider/model quality varies by availability and quota.

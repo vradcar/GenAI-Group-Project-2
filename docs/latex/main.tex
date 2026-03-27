@@ -406,6 +406,67 @@ Demo artifact & Present & \texttt{docs/demo/demo-video.mp4} \\
 \caption{Validation status summary.}
 \end{table}
 
+\section{Comparative Evaluation and Reflection}
+
+\subsection{Same-Task LLM Comparison}
+
+To satisfy a fair comparison, we used the \textbf{same task}, \textbf{same tool set}, and
+\textbf{same runtime constraints} for each model.
+
+\textbf{Task used for comparison:}
+\begin{quote}
+``Read deployment documentation, identify one missing operational check, and draft a concrete update for the usage guide.''
+\end{quote}
+
+\textbf{Controlled setup:}
+\begin{itemize}
+    \item Same repository snapshot and MCP servers (filesystem, context7, local RAG).
+    \item Same agent limits (step budget and tool runtime behavior).
+    \item Same execution policy (confirm mode during evaluation).
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}l l l X@{}}
+\toprule
+\textbf{Provider/Model} & \textbf{Task Completion} & \textbf{Tool-Call Reliability} & \textbf{Observed Behavior} \\
+\midrule
+Ollama (local model) & Consistent & High & Stable step-by-step execution; generally conservative edits; useful for predictable local runs. \\
+Groq (cloud model) & Usually complete & Medium & Strong reasoning quality, but occasional malformed tool-call formatting required parser recovery logic. \\
+OpenAI (cloud model) & Consistent & High & Most structured outputs for tool use; concise edit proposals and clear summaries. \\
+\bottomrule
+\end{tabularx}
+\caption{Same-task comparison across supported providers in ForgePilot.}
+\end{table}
+
+\textbf{Reflection:} this comparison directly influenced design choices in
+\texttt{providers.py} and \texttt{agent.py}: provider fallback, robust output parsing,
+and safer recovery when tool-call schema quality varies by model.
+
+\subsection{Impact Analysis of the Advanced RAG Technique}
+
+ForgePilot uses a fusion-style retrieval strategy in \texttt{rag\_server/retriever.py}
+(query expansion + rank fusion) instead of relying on a single-query retrieval path.
+
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{Criterion} & \textbf{Single-Query Baseline} & \textbf{Fusion Retrieval (Implemented)} \\
+\midrule
+Coverage of relevant chunks & Narrower for rephrased prompts & Broader coverage through expanded query variants and merged rankings \\
+Robustness to wording changes & Sensitive to wording shifts & More stable across paraphrases and troubleshooting-style prompts \\
+Grounding quality in final response & More likely to miss supporting context & Better supporting context density in returned chunks and summaries \\
+Operational suitability for CLI agent & Simpler but brittle & Better fit for autonomous multi-step coding assistance \\
+\bottomrule
+\end{tabularx}
+\caption{Observed impact of advanced RAG strategy used in the project.}
+\end{table}
+
+\textbf{Reflection:} the advanced RAG technique improved answer reliability for
+documentation-focused tasks, especially when users asked broad questions first and
+then narrowed to implementation detail in follow-up steps.
+
 \section{Limitations and Future Work}
 
 \begin{itemize}
