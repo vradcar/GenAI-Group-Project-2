@@ -1,35 +1,33 @@
 # How to Use ForgePilot
 
 ForgePilot is a CLI coding assistant with MCP integration and a local RAG pipeline.
-This guide is accurate for this repository on Windows PowerShell.
+This guide covers macOS/Linux and Windows. Use the scripts in `scripts/mac/` for macOS/Linux or `scripts/windows/` for Windows.
 
 ## Prerequisites
 
 - Python 3.11+
 - Node.js (for MCP filesystem server via `npx`)
-- PowerShell with script execution enabled for local scripts
-
-Check script policy if needed:
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
 
 ## Setup
 
 ### 1) Create `.env`
 
-```powershell
-Copy-Item .env.example .env
-notepad .env
+```bash
+cp .env.example .env
 ```
 
 Fill provider keys/models you plan to use (for example `GROQ_API_KEY`, `GROQ_MODEL`, `CONTEXT7_API_KEY`).
 
 ### 2) Bootstrap environment
 
+macOS/Linux:
+```bash
+./scripts/mac/bootstrap.sh
+```
+
+Windows:
 ```powershell
-./scripts/bootstrap.ps1
+.\scripts\windows\bootstrap.ps1
 ```
 
 This creates `.venv`, installs dependencies, and installs this project in editable mode (`pip install -e .`).
@@ -40,32 +38,38 @@ If your prompt already shows `(.venv)`, you can run `python` commands directly w
 
 ### Single-task mode
 
-```powershell
-python -m forgepilot.cli run "summarize this repository"
+```bash
+python3 -m forgepilot.cli run "summarize this repository"
 ```
 
 Wrapper script option:
 
+macOS/Linux:
+```bash
+./scripts/mac/run_assistant.sh "summarize this repository"
+```
+
+Windows:
 ```powershell
-./scripts/run_assistant.ps1 -Task "summarize this repository"
+.\scripts\windows\run_assistant.ps1 -Task "summarize this repository"
 ```
 
 Interpreter-explicit option (works even if venv is not activated):
 
-```powershell
-./.venv/Scripts/python.exe -m forgepilot.cli run "summarize this repository"
+```bash
+./.venv/bin/python -m forgepilot.cli run "summarize this repository"
 ```
 
 ### REPL mode
 
-```powershell
-python -m forgepilot.cli repl
+```bash
+python3 -m forgepilot.cli repl
 ```
 
 Interpreter-explicit option:
 
-```powershell
-./.venv/Scripts/python.exe -m forgepilot.cli repl
+```bash
+./.venv/bin/python -m forgepilot.cli repl
 ```
 
 Inside REPL:
@@ -81,46 +85,54 @@ ForgePilot uses `EXECUTION_MODE` from `.env`:
 
 You can also override per command:
 
+macOS/Linux:
+```bash
+EXECUTION_MODE=auto ./scripts/mac/run_assistant.sh "create NOTES.md"
+```
+
+Windows:
 ```powershell
-$env:EXECUTION_MODE='auto'; ./scripts/run_assistant.ps1 -Task "create NOTES.md"; $env:EXECUTION_MODE='confirm'
+$env:EXECUTION_MODE='auto'; .\scripts\windows\run_assistant.ps1 -Task "create NOTES.md"; $env:EXECUTION_MODE='confirm'
 ```
 
 ## Common Commands
 
+macOS/Linux:
+```bash
+./scripts/mac/run_tests.sh
+./scripts/mac/run_rag_ingest.sh
+./scripts/mac/run_rag_server.sh
+./scripts/mac/deploy_local.sh
+```
+
+Windows:
 ```powershell
-# Run tests
-./scripts/run_tests.ps1
-
-# Ingest RAG docs
-./scripts/run_rag_ingest.ps1
-
-# Start RAG service CLI helper
-./scripts/run_rag_server.ps1
-
-# Local end-to-end deployment checks
-./scripts/deploy_local.ps1
+.\scripts\windows\run_tests.ps1
+.\scripts\windows\run_rag_ingest.ps1
+.\scripts\windows\run_rag_server.ps1
+.\scripts\windows\deploy_local.ps1
 ```
 
 ## Troubleshooting
 
 ### `ModuleNotFoundError: No module named 'forgepilot'`
 
-```powershell
-./.venv/Scripts/python.exe -m pip install -e .
+```bash
+./.venv/bin/python -m pip install -e .
 ```
 
 ### REPL does not start
 
 Use the exact command below (note `repl` subcommand):
 
-```powershell
-python -m forgepilot.cli repl
+```bash
+python3 -m forgepilot.cli repl
 ```
 
 If that fails because the active interpreter is not the project venv, use:
 
-```powershell
-./.venv/Scripts/python.exe -m forgepilot.cli repl
+```bash
+./.venv/bin/python -m forgepilot.cli repl
 ```
 
 ### MCP tools not available
@@ -131,8 +143,14 @@ If that fails because the active interpreter is not the project venv, use:
 
 ### RAG results missing
 
+macOS/Linux:
+```bash
+./scripts/mac/run_rag_ingest.sh
+```
+
+Windows:
 ```powershell
-./scripts/run_rag_ingest.ps1
+.\scripts\windows\run_rag_ingest.ps1
 ```
 
 Also verify `docs/source_docs` contains source files and `.vectorstore` is writable.

@@ -26,10 +26,18 @@ dist/
 
 # IDE/OS
 .vscode/
+.idea/
 .DS_Store
 Thumbs.db
+
+# Claude Code
+CLAUDE.md
 
 # Local data
 data/
 logs/
 .vectorstore/
+
+# Demo artifacts
+demo_output/
+docs/DEMO_SCRIPT.md

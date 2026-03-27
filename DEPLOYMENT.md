@@ -11,8 +11,14 @@ This project deploys locally for grading/demo.
 ## One-Command Deployment Check
 From repo root:
 
+macOS/Linux:
+```bash
+./scripts/mac/deploy_local.sh
+```
+
+Windows:
 ```powershell
-./scripts/deploy_local.ps1
+.\scripts\windows\deploy_local.ps1
 ```
 
 This command performs:
@@ -25,28 +31,34 @@ This command performs:
    - context7
 
 ## Optional Flags
-- `-SkipBootstrap`
-- `-SkipTests`
-- `-SkipRagIngest`
-- `-SkipMcpCheck`
+- `--skip-bootstrap`
+- `--skip-tests`
+- `--skip-rag-ingest`
+- `--skip-mcp-check`
 
 Example:
 
+macOS/Linux:
+```bash
+./scripts/mac/deploy_local.sh --skip-bootstrap
+```
+
+Windows:
 ```powershell
-./scripts/deploy_local.ps1 -SkipBootstrap
+.\scripts\windows\deploy_local.ps1 -SkipBootstrap
 ```
 
 ## Manual Runtime Start
 After deployment checks:
 
-```powershell
-python -m forgepilot.cli repl
+```bash
+python3 -m forgepilot.cli repl
 ```
 
 For RAG ingestion only:
 
-```powershell
-python -m rag_server.ingest
+```bash
+python3 -m rag_server.ingest
 ```
 
 ## Troubleshooting
@@ -55,11 +67,10 @@ python -m rag_server.ingest
 - If RAG fails, verify `docs/source_docs` exists and `.vectorstore` is writable.
 
 ## Extra Notes
-- Always verify environment variables are loaded before starting (`Get-Content .env` in PowerShell)
+- Always verify environment variables are loaded before starting (`cat .env`)
 - Double-check API keys are valid and not expired - test with a simple API call first
 - Run `mcp list` to verify all MCP servers are discoverable and responding
 - Model fallback behavior: if primary model fails, system will attempt to use backup models in order: gpt-4, gpt-3.5-turbo, claude-3-sonnet
-- Windows PowerShell commands are fully compatible - use `powershell.exe` if running from cmd.exe
 - Quick rollback: keep previous `.vectorstore` backup and restore if ingestion fails
 
 ## Post-Deploy Verification Checklist

@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 Set-Location (Split-Path -Parent $MyInvocation.MyCommand.Path)
-Set-Location ..
+Set-Location ..\..
 
 Write-Host "[Deploy] Starting local deployment checks..."
 
@@ -18,17 +18,17 @@ if (-not (Test-Path .\.env)) {
 
 if (-not $SkipBootstrap) {
   Write-Host "[Deploy] Bootstrapping environment..."
-  .\scripts\bootstrap.ps1
+  .\scripts\windows\bootstrap.ps1
 }
 
 if (-not $SkipTests) {
   Write-Host "[Deploy] Running tests..."
-  .\scripts\run_tests.ps1
+  .\scripts\windows\run_tests.ps1
 }
 
 if (-not $SkipRagIngest) {
   Write-Host "[Deploy] Running RAG ingestion..."
-  .\scripts\run_rag_ingest.ps1
+  .\scripts\windows\run_rag_ingest.ps1
 }
 
 if (-not $SkipMcpCheck) {

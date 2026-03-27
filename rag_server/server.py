@@ -14,7 +14,7 @@ def serve():
     """
     Start the RAG MCP server.
     """
-    typer.echo("[green]RAG MCP server ready![/green]")
+    typer.echo("RAG MCP server ready!")
     typer.echo(f"Collection: {settings.rag_collection}, Vector DB: {settings.rag_vector_dir}")
     typer.echo("You can now call the 'ask' command to query documents.")
 
@@ -24,9 +24,9 @@ def ask(question: str):
     Query the RAG server and return an answer.
     """
     result = retriever.query(question)
-    typer.echo("[bold]Question:[/bold] " + result["question"])
-    typer.echo("[bold]Answer:[/bold] " + result["answer"])
-    typer.echo("[bold]Retrieved Chunks:[/bold]")
+    typer.echo("Question: " + result["question"])
+    typer.echo("Answer: " + result["answer"])
+    typer.echo("Retrieved Chunks:")
     for idx, chunk in enumerate(result["chunks"], 1):
         typer.echo(f"{idx}. {chunk[:300]}...")  # show first 300 chars
 

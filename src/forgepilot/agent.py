@@ -131,11 +131,23 @@ class CodingAgent:
         )
 
         async with self.mcp_client:
-            available_mcp_tools = [tool["name"] for tool in self.mcp_client.list_tools()]
+            mcp_tools = self.mcp_client.list_tools()
+            available_mcp_tools = [tool["name"] for tool in mcp_tools]
 
-            if available_mcp_tools:
+            if mcp_tools:
+                tool_signatures: list[str] = []
+                for tool in mcp_tools[:20]:
+                    schema = tool.get("input_schema", {})
+                    props = schema.get("properties", {})
+                    required = schema.get("required", [])
+                    params = []
+                    for pname in props:
+                        marker = " (required)" if pname in required else ""
+                        params.append(f"{pname}{marker}")
+                    sig = f"{tool['name']}({', '.join(params)})"
+                    tool_signatures.append(sig)
                 history.append(
-                    "available_mcp_tools: " + ", ".join(available_mcp_tools[:20])
+                    "available_mcp_tools:\n" + "\n".join(tool_signatures)
                 )
 
             if requires_doc_quality_review:
@@ -210,6 +222,8 @@ class CodingAgent:
 
                 tool_name = action.get("tool")
                 args = action.get("args")
+                if isinstance(args, str):
+                    args = {"path": args}
                 if not isinstance(tool_name, str) or not isinstance(args, dict):
                     history.append(f"step {step} invalid action payload")
 

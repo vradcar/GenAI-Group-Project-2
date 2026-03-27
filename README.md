@@ -2,21 +2,25 @@
 
 Template scaffold for a CLI coding assistant with provider abstraction, MCP integration, and a custom local RAG MCP server.
 
-## Quick Start (Windows PowerShell)
+## Quick Start
 
 1. Copy environment template:
-	- `Copy-Item .env.example .env`
+    - `cp .env.example .env`
 2. Bootstrap virtual environment:
-	- `./scripts/bootstrap.ps1`
+    - macOS/Linux: `./scripts/mac/bootstrap.sh`
+    - Windows: `.\scripts\windows\bootstrap.ps1`
 3. Run tests:
-	- `./scripts/run_tests.ps1`
+    - macOS/Linux: `./scripts/mac/run_tests.sh`
+    - Windows: `.\scripts\windows\run_tests.ps1`
 4. Run assistant template:
-	- `./scripts/run_assistant.ps1 -Task "summarize this repository"`
+    - macOS/Linux: `./scripts/mac/run_assistant.sh "summarize this repository"`
+    - Windows: `.\scripts\windows\run_assistant.ps1 -Task "summarize this repository"`
 5. Run local RAG ingestion + server template:
-	- `./scripts/run_rag_ingest.ps1`
-	- `./scripts/run_rag_server.ps1`
+    - macOS/Linux: `./scripts/mac/run_rag_ingest.sh` / `./scripts/mac/run_rag_server.sh`
+    - Windows: `.\scripts\windows\run_rag_ingest.ps1` / `.\scripts\windows\run_rag_server.ps1`
 6. Run end-to-end local deployment checks:
-  - `./scripts/deploy_local.ps1`
+    - macOS/Linux: `./scripts/mac/deploy_local.sh`
+    - Windows: `.\scripts\windows\deploy_local.ps1`
 
 ## Deployment
 
@@ -51,12 +55,8 @@ Template scaffold for a CLI coding assistant with provider abstraction, MCP inte
   - `test_config.py`
   - `test_agent_template.py`
 - `scripts/`
-  - `bootstrap.ps1`
-  - `deploy_local.ps1`
-  - `run_assistant.ps1`
-  - `run_rag_ingest.ps1`
-  - `run_rag_server.ps1`
-  - `run_tests.ps1`
+  - `mac/` — shell scripts for macOS/Linux
+  - `windows/` — PowerShell scripts for Windows
 
 ## Planning Diagrams (Required)
 
@@ -72,4 +72,3 @@ Template scaffold for a CLI coding assistant with provider abstraction, MCP inte
 - RAG ingestion and retrieval include persistent vectors and fusion-style multi-query ranking.
 - MCP client includes dynamic tool loading, namespaced tool registration, and async tool invocation.
 - Keep ingestion persistent so vector data is reused across sessions.
-

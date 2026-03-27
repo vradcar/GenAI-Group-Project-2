@@ -52,8 +52,8 @@ def _print_header(name: str, mode: str) -> None:
 
 
 def _run_task(agent: CodingAgent, task: str, max_steps: int) -> None:
-    with console.status("[bold green]Thinking…[/bold green]"):
-        result = agent.run_task(task=task, max_steps=max_steps)
+    console.print("[bold green]Thinking…[/bold green]")
+    result = agent.run_task(task=task, max_steps=max_steps)
     console.print(result)
 
 # Commands
@@ -70,9 +70,8 @@ def run(
     _print_header(settings.forgepilot_name, settings.execution_mode)
     console.print()
 
-    with console.status("[bold green]Thinking…[/bold green]"):
-        result = agent.run_task(task=task, max_steps=max_steps)
-
+    console.print("[bold green]Thinking…[/bold green]")
+    result = agent.run_task(task=task, max_steps=max_steps)
     console.print(result)
 
 
